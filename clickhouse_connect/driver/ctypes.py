@@ -30,9 +30,9 @@ def connect_c_modules():
         logger.debug('Successfully imported ClickHouse Connect C data optimizations')
         connect_numpy()
     except ImportError as ex:
-        logger.warning('Unable to connect optimized C data functions [%s], falling back to pure Python',
-                       str(ex))
-
+    #     logger.warning('Unable to connect optimized C data functions [%s], falling back to pure Python',
+    #                    str(ex))
+        pass
 
 def connect_numpy():
     global numpy_conv

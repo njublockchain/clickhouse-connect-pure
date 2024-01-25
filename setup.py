@@ -4,18 +4,19 @@ from setuptools import setup, find_packages
 
 c_modules = []
 
-try:
-    from Cython.Build import cythonize
-    from Cython import __version__ as cython_version
+# try:
+#     from Cython.Build import cythonize
+#     from Cython import __version__ as cython_version
 
-    print(f'Using Cython {cython_version} to build cython modules')
-    c_modules = cythonize('clickhouse_connect/driverc/*.pyx', language_level='3str')
-except ImportError as ex:
-    print('Cython Install Failed, Not Building C Extensions: ', ex)
-    cythonize = None
-except Exception as ex:
-    print('Cython Build Failed, Not Building C Extensions: ', ex)
-    cythonize = None
+#     print(f'Using Cython {cython_version} to build cython modules')
+#     c_modules = cythonize('clickhouse_connect/driverc/*.pyx', language_level='3str')
+# except ImportError as ex:
+#     print('Cython Install Failed, Not Building C Extensions: ', ex)
+#     cythonize = None
+# except Exception as ex:
+#     print('Cython Build Failed, Not Building C Extensions: ', ex)
+#     cythonize = None
+cythonize = None
 
 
 def run_setup(try_c: bool = True):
@@ -42,7 +43,7 @@ def run_setup(try_c: bool = True):
             version = match.group(1)
 
     setup(
-        name='clickhouse-connect',
+        name='clickhouse-connect-micropip',
         author='ClickHouse Inc.',
         author_email='clients@clickhouse.com',
         keywords=['clickhouse', 'superset', 'sqlalchemy', 'http', 'driver'],
