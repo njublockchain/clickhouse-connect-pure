@@ -11,6 +11,7 @@ from pytest import fixture
 from clickhouse_connect.driver.client import Client
 from clickhouse_connect import create_client
 from clickhouse_connect import common
+from clickhouse_connect.driver.common import coerce_bool
 from clickhouse_connect.driver.exceptions import OperationalError
 from clickhouse_connect.tools.testing import TableContext
 from clickhouse_connect.driver.httpclient import HttpClient
@@ -38,12 +39,11 @@ class TestException(BaseException):
 def test_config_fixture() -> Iterator[TestConfig]:
     common.set_setting('max_connection_age', 15)  # Make sure resetting connections doesn't break stuff
     host = os.environ.get('CLICKHOUSE_CONNECT_TEST_HOST', 'localhost')
-    docker = host == 'localhost' and \
-        os.environ.get('CLICKHOUSE_CONNECT_TEST_DOCKER', 'True').lower() in ('true', '1', 'y', 'yes')
+    docker = host == 'localhost' and coerce_bool(os.environ.get('CLICKHOUSE_CONNECT_TEST_DOCKER', 'True'))
     port = int(os.environ.get('CLICKHOUSE_CONNECT_TEST_PORT', '0'))
     if not port:
         port = 10723 if docker else 8123
-    cloud = os.environ.get('CLICKHOUSE_CONNECT_TEST_CLOUD', 'True').lower() in ('true', '1', 'y', 'yes')
+    cloud = coerce_bool(os.environ.get('CLICKHOUSE_CONNECT_TEST_CLOUD', 'True'))
     username = os.environ.get('CLICKHOUSE_CONNECT_TEST_USER', 'default')
     password = os.environ.get('CLICKHOUSE_CONNECT_TEST_PASSWORD', '')
     test_database = f'ch_connect__{random.randint(100000, 999999)}__{int(time.time() * 1000)}'
@@ -62,6 +62,7 @@ def test_db_fixture(test_config: TestConfig) -> Iterator[str]:
 @fixture(scope='session', name='test_table_engine')
 def test_table_engine_fixture() -> Iterator[str]:
     yield 'MergeTree'
+
 
 # pylint: disable=too-many-branches
 @fixture(scope='session', autouse=True, name='test_client')
@@ -94,15 +95,14 @@ def test_client_fixture(test_config: TestConfig, test_db: str) -> Iterator[Clien
                 client_name='int_tests/test',
                 apply_server_timezone=False,
                 settings={'allow_suspicious_low_cardinality_types': True,
-                          'insert_deduplicate': False}
+                          'insert_deduplicate': False,
+                          'async_insert': 0}
             )
             break
         except OperationalError as ex:
             if tries > 10:
                 raise TestException('Failed to connect to ClickHouse server after 30 seconds') from ex
             time.sleep(3)
-    if client.min_version('22.6.1'):
-        client.set_client_setting('allow_experimental_object_type', 1)
     if client.min_version('22.8'):
         client.set_client_setting('database_replicated_enforce_synchronous_settings', 1)
     if test_config.insert_quorum:

@@ -1,4 +1,5 @@
 import decimal
+import os
 import uuid
 from datetime import datetime
 from ipaddress import IPv4Address, IPv6Address
@@ -9,6 +10,7 @@ import pytest
 from clickhouse_connect.datatypes.format import set_default_formats, clear_default_format, set_read_format, \
     set_write_format
 from clickhouse_connect.driver import Client
+from clickhouse_connect.driver.common import coerce_bool
 
 
 def test_low_card(test_client: Client, table_context: Callable):
@@ -46,8 +48,8 @@ def test_nulls(test_client: Client, table_context: Callable):
 
 
 def test_json(test_client: Client, table_context: Callable):
-    if not test_client.min_version('22.6.1'):
-        pytest.skip('JSON test skipped for old version {test_client.server_version}')
+    if not coerce_bool(os.environ.get('CLICKHOUSE_CONNECT_TEST_JSON_TYPE')):
+        pytest.skip('Deprecated JSON type not tested')
     with table_context('native_json_test', [
         'key Int32',
         'value JSON',
@@ -97,7 +99,7 @@ def test_read_formats(test_client: Client, test_table_engine: str):
     row2 = (2, uuid2, 'short str', '10.44.75.20', ['74:382::3332', '8700:5200::5782:3992'], (7320, '252.18.4.50'))
     test_client.insert('read_format_test', [row1, row2])
 
-    result = test_client.query('SELECT * FROM read_format_test').result_set
+    result = test_client.query('SELECT * FROM read_format_test;;;').result_set
     assert result[0][1] == uuid1
     assert result[1][3] == IPv4Address('10.44.75.20')
     assert result[0][2] == b'\x35\x33\x30\x30\x35\x35\x37\x37\x37\x6b'
@@ -211,3 +213,11 @@ def test_fixed_str_padding(test_client: Client, table_context: Callable):
         test_client.insert(table, [[3, '']])
         result = test_client.query(f'select * from {table} ORDER BY key')
         assert result.result_columns[1] == [b'abc', b'a\x00\x00', b'\x00\x00\x00']
+
+
+def test_nonstandard_column_names(test_client: Client, table_context: Callable):
+    table = 'пример_кириллица'
+    with table_context(table, 'колонка String') as t:
+        test_client.insert(t.table, (('привет',),))
+        result = test_client.query(f'SELECT * FROM {t.table}').result_set
+        assert result[0][0] == 'привет'

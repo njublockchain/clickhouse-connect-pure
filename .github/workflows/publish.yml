@@ -21,11 +21,12 @@ jobs:
     env:
       CIBW_SKIP: 'cp36-* cp37-* pp37-* *-musllinux*'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.2
-      - uses: actions/upload-artifact@v3
+        uses: pypa/cibuildwheel@v2.16.5
+      - uses: actions/upload-artifact@v4
         with:
+          name: build-x86-manylinux
           path: ./wheelhouse/*.whl
 
   build_x86_musllinux_wheels:
@@ -34,11 +35,12 @@ jobs:
     env:
       CIBW_SKIP: 'cp36-* cp37-* pp37-* *-manylinux*'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.2
-      - uses: actions/upload-artifact@v3
+        uses: pypa/cibuildwheel@v2.16.5
+      - uses: actions/upload-artifact@v4
         with:
+          name: build-x86-musllinux
           path: ./wheelhouse/*.whl
 
   build_aarch64_manylinux_wheels:
@@ -48,15 +50,16 @@ jobs:
       CIBW_ARCHS_LINUX: aarch64
       CIBW_SKIP: 'cp36-* cp37-* pp* *-musllinux*'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
         with:
           platforms: all
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.2
-      - uses: actions/upload-artifact@v3
+        uses: pypa/cibuildwheel@v2.16.5
+      - uses: actions/upload-artifact@v4
         with:
+          name: build-aarch64-manylinux
           path: ./wheelhouse/*.whl
 
   build_aarch64_musllinux_wheels:
@@ -66,15 +69,16 @@ jobs:
       CIBW_ARCHS_LINUX: aarch64
       CIBW_SKIP: 'cp36-* cp37-* pp* *-manylinux*'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
         with:
           platforms: all
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.2
-      - uses: actions/upload-artifact@v3
+        uses: pypa/cibuildwheel@v2.16.5
+      - uses: actions/upload-artifact@v4
         with:
+          name: build-aarch64-musllinux
           path: ./wheelhouse/*.whl
 
   build_aarch64_pypy_wheels:
@@ -84,28 +88,30 @@ jobs:
       CIBW_ARCHS_LINUX: aarch64
       CIBW_BUILD: 'pp*'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
         with:
           platforms: all
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.2
-      - uses: actions/upload-artifact@v3
+        uses: pypa/cibuildwheel@v2.16.5
+      - uses: actions/upload-artifact@v4
         with:
+          name: build-aarch64-pypy
           path: ./wheelhouse/*.whl
 
   build_macos_wheels:
     name: Build wheels on macos
     runs-on: macos-12
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.2
+        uses: pypa/cibuildwheel@v2.16.5
         env:
           CIBW_ARCHS_MACOS: x86_64 arm64
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: build-macos
           path: ./wheelhouse/*.whl
 
   build_windows_wheels:
@@ -114,11 +120,12 @@ jobs:
     env:
       CIBW_BUILD_VERBOSITY: 2
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.16.2
-      - uses: actions/upload-artifact@v3
+        uses: pypa/cibuildwheel@v2.16.5
+      - uses: actions/upload-artifact@v4
         with:
+          name: build-windows
           path: ./wheelhouse/*.whl
 
   publish:
@@ -134,14 +141,16 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ inputs.publish_type != 'build' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Build source distribution
         run: |
           rm -rf dist 
           python setup.py sdist
       - name: Retrieve wheels
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
+          pattern: build-*
+          merge_multiple: true
           path: wheelhouse
       - name: move and list artifacts
         run: |

@@ -9,6 +9,38 @@ ClickHouse Connect has been included as an official Apache Superset database con
 However, if you need compatibility with older versions of Superset, you may need clickhouse-connect
 v0.5.25, which dynamically loads the EngineSpec from the clickhouse-connect project.
 
+## 0.7.4, 2024-03-24
+### Improvement
+- Added the new client method `query_arrow_stream` for streaming PyArrow queries from ClickHouse.  Big thanks to
+[NotSimone](https://github.com/NotSimone) for the feature and tests!  Closes https://github.com/ClickHouse/clickhouse-connect/issues/155.
+
+## 0.7.3, 2024-03-14
+### Improvement
+- Add summary field to Cursor object to retrieve the result of 'X-Clickhouse-Summary' header.  Thanks to 
+[elchyn-cheliabiyeu](https://github.com/elchyn-cheliabiyeu) for the PR!
+
+## 0.7.2, 2024-03-07
+### Bug Fixes
+- Inserts into columns with multibyte UTF-8 names were broken.  This has been fixed.  https://github.com/ClickHouse/clickhouse-connect/issues/312
+- If the result of applying the precedence of timezones to a column results in an explicit UTC timezone, the datetime object returned
+should now be timezone naive.  This should make the behavior consistent with the [documentation](https://clickhouse.com/docs/en/integrations/python#time-zones).
+Closes https://github.com/ClickHouse/clickhouse-connect/issues/308 (except for a documentation update)
+- Extraneous semicolons are automatically removed from the end of queries.  Addresses the most basic behavior in https://github.com/ClickHouse/clickhouse-connect/issues/310.
+
+### Performance Improvement
+- Pandas DataFrame returned from the client `query_df` method should be constructed somewhat faster in cases where the data returned in ClickHouse
+is in many small blocks.  Note that performance gains in this use case are somewhat limited because of the memory and copying cost of
+building a large DataFrame from many smaller ClickHouse Native block structures, so such performance problems should normally be addressed at the
+query or ClickHouse data storage level (by for example, reducing the number of partitions and/or shards referenced by the query).  This may partially
+address https://github.com/ClickHouse/clickhouse-connect/issues/307.
+
+## 0.7.1, 2024-02-28
+### Bug Fixes
+- Changed type hint of the `query` parameter in Client `query*` methods to `Optional[str]` to work correctly with type analyzers.
+This also highlights that using a query_context instead of a query in these methods is supported (and preferred for repeated queries).
+Thanks to [Avery Fischer](https://github.com/biggerfisch) for the PR!
+- Fixed sending a full table name to the `insert_file` tools function.  Closes https://github.com/ClickHouse/clickhouse-connect/issues/305
+
 ## 0.7.0, 2024-01-22
 ### Breaking Change
 - Python 3.7 builds are no longer part of the wheels deployed to PyPI
