@@ -37,9 +37,10 @@ def run_setup(try_c: bool = True):
             version = version_file.readline()
     else:
         with open(os.path.join(project_dir, 'clickhouse_connect', '__version__.py'), encoding='utf-8') as version_file:
-            match = re.search(r"version\s*=\s*'(.+)'", version_file.read().strip())
+            file_version = version_file.read().strip()
+            match = re.search(r"version\s*=\s*'(.+)'", file_version)
             if match is None:
-                raise ValueError(f'invalid version in clickhouse_connect/__version__.py')
+                raise ValueError(f'invalid version {file_version} in clickhouse_connect/__version__.py')
             version = match.group(1)
 
     setup(
@@ -69,6 +70,7 @@ def run_setup(try_c: bool = True):
             'pandas': ['pandas'],
             'arrow': ['pyarrow'],
             'orjson': ['orjson'],
+            'tzlocal': ['tzlocal'],
         },
         tests_require=['pytest'],
         entry_points={
@@ -91,6 +93,7 @@ def run_setup(try_c: bool = True):
 
 try:
     run_setup()
+# pylint: disable=broad-exception-caught
 except (Exception, IOError, SystemExit) as e:
     print(f'Unable to compile C extensions for faster performance due to {e}, will use pure Python')
     run_setup(False)

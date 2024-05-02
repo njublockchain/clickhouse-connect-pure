@@ -9,6 +9,34 @@ ClickHouse Connect has been included as an official Apache Superset database con
 However, if you need compatibility with older versions of Superset, you may need clickhouse-connect
 v0.5.25, which dynamically loads the EngineSpec from the clickhouse-connect project.
 
+## 0.7.8, 2024-04-14
+### Breaking Change
+- The default behavior of applying the client timezone if the GMT offset of the client matched the GMT offset
+of the server for the current time has been changed.  The new default is to **always** apply the server timezone
+unless the optional `apply_server_timezone` `get_client` parameter is explicitly set to `False`.  The previous behavior
+could cause confusing results where datetime values would be rendered in a Daylight Savings Time/Summer Time zone when
+DST was not active, and vice versa.
+
+## 0.7.7, 2024-04-03
+### Bug Fix
+- Fixed client side binding for complex types containing floats or integers that was broken in version 0.7.5.
+Closes https://github.com/ClickHouse/clickhouse-connect/issues/335.
+### Improvement
+- Added a `raw_stream` method to the Client the returns an io.Base.  Use this instead of the `raw_query` method
+with the (now removed) optional `stream` keyword boolean.  Thanks to [Martijn Thé](https://github.com/martijnthe) for
+the PR that highlighted the somewhat messy public API.
+
+## 0.7.6, 2024-04-01
+### Bug Fix
+- Fixed issue with SQLAlchemy Point type.  Closes https://github.com/ClickHouse/clickhouse-connect/issues/332.
+
+## 0.7.5, 2024-03-28
+### Bug Fixes
+- Fixed client side binding for Python format strings using `%d` (int) and `%f` (float) format patterns.  Closes
+https://github.com/ClickHouse/clickhouse-connect/issues/327
+- Allows empty `data` argument in the initializer of `ExternalFile` / `ExternalData` objects. Thanks to
+  [martijnthe](https://github.com/martijnthe) for the PR!
+
 ## 0.7.4, 2024-03-24
 ### Improvement
 - Added the new client method `query_arrow_stream` for streaming PyArrow queries from ClickHouse.  Big thanks to
