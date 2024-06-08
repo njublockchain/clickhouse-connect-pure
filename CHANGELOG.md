@@ -7,6 +7,17 @@ release (0.8.0), unrecognized arguments/keywords for these methods of creating a
 instead of being passed as ClickHouse server settings. This is in conjunction with some refactoring in Client construction.
 The supported method of passing ClickHouse server settings is to prefix such arguments/query parameters with`ch_`.  
 
+## 0.7.12, 2024-06-04
+### Bug Fix
+- When using `query_df` with a FixedString column with a read format of 'string' (and the default `query_df` setting
+`use_extended_dtypes=True`), the resulting column in the dataframe will now be correctly set to the (extended) String dtype.
+Fixes https://github.com/ClickHouse/clickhouse-connect/issues/356
+
+## 0.7.11, 2024-05-26
+### Improvement
+- Python or Pandas float value to ClickHouse Decimal now correctly rounds Float values for more accurate conversions.  Thanks
+to [Frederik Eychenié](https://github.com/feychenie) for the investigation and PR!
+
 ## 0.7.10, 2024-05-22
 ### Bug Fix
 - Clean up pandas series concatenation issue
